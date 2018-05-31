@@ -105,7 +105,7 @@ def analyze_image(image_path,
     rtn_vals = {}
     if score:
         reg_model = load_model(config_params['files']['regression_model'])
-        rtn_vals['whz'] = reg_model.predict(scld_features)
+        rtn_vals['whz'] = reg_model.predict(scld_features)[0][0]
 
     if classification:
         class_model = load_model(config_params['files']['classification_model'])
