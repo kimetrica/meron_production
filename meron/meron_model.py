@@ -19,7 +19,7 @@ def analyze_image(image_path,
                   classification=False,
                   age=None,
                   gender=None,
-                  config_file='config/config.ini'):
+                  config_file='meron_api/apps/meron_production/config/config.ini'):
 
     '''Function to determine malnutrition classification and wfh (wfl) score from facial image
     and gender and age data.
@@ -80,7 +80,9 @@ def analyze_image(image_path,
     # Pre-process
     # -----------
     # Detect face, normalize brightness and align face in image
-    processed_img = image_preprocess(image_path)
+    processed_img = image_preprocess(
+        image_path, landmark_file=config_params['files']['landmark_file']
+    )
 
     # ---------------
     # Create features
@@ -105,7 +107,7 @@ def analyze_image(image_path,
     rtn_vals = {}
     if score:
         reg_model = load_model(config_params['files']['regression_model'])
-        rtn_vals['whz'] = reg_model.predict(scld_features)[0][0]
+        rtn_vals['score'] = reg_model.predict(scld_features)[0][0]
 
     if classification:
         class_model = load_model(config_params['files']['classification_model'])
