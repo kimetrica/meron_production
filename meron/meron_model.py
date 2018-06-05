@@ -1,25 +1,33 @@
 import configparser
-import numpy as np
 
 import cv2
-import dlib
-
-from keras.models import load_model
+import numpy as np
+from imutils.face_utils import FaceAligner
+from keras.applications.imagenet_utils import preprocess_input
 from keras.engine import Model
-from keras_vggface.vggface import VGGFace
 from keras.layers import Flatten
+from keras.models import load_model
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
 from keras import backend as K
+from keras_vggface.vggface import VGGFace
+from rest_framework import status
+from rest_framework.exceptions import APIException
 from sklearn.externals import joblib
-from imutils.face_utils import FaceAligner
+
+import dlib
+
+
+class NoFaceDetectedException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = {'image': 'No face could be detected.'}
 
 
 def analyze_image(image_path,
                   score=False,
                   classification=False,
                   age=None,
-                  gender=None,
+                  gender='',
                   config_file='meron_api/apps/meron_production/config/config.ini'):
 
     '''Function to determine malnutrition classification and wfh (wfl) score from facial image
@@ -183,7 +191,10 @@ def image_preprocess(img_file, landmark_file='./data/shape_predictor_68_face_lan
     # extract the ROI of the *original* face, then align
     # the face using facial landmarks
     # --------------------------------------------------
-    aligned_img = fa.align(img_norm, img_norm, rect[0])
+    try:
+        aligned_img = fa.align(img_norm, img_norm, rect[0])
+    except IndexError:
+        raise NoFaceDetectedException
 
     return aligned_img
 
