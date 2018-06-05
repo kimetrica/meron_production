@@ -10,6 +10,7 @@ from keras_vggface.vggface import VGGFace
 from keras.layers import Flatten
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
+from keras import backend as K
 from sklearn.externals import joblib
 from imutils.face_utils import FaceAligner
 
@@ -210,6 +211,7 @@ def extract_features(img):
     # Pre-trained model for features
     # ------------------------------
     # Extract model for transfer learning
+    K.clear_session()
     vgg_model = VGGFace(model='resnet50')
     last_layer = vgg_model.get_layer('avg_pool').output
     out = Flatten(name='flatten')(last_layer)
