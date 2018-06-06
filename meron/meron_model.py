@@ -3,13 +3,12 @@ import configparser
 import cv2
 import numpy as np
 from imutils.face_utils import FaceAligner
+from keras import backend as K
 from keras.applications.imagenet_utils import preprocess_input
 from keras.engine import Model
 from keras.layers import Flatten
-from keras.models import load_model
+from .model_preloader import preloaded_reg_model, preloaded_class_model
 from keras.preprocessing import image
-from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
 from keras_vggface.vggface import VGGFace
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -115,11 +114,11 @@ def analyze_image(image_path,
     # -------
     rtn_vals = {}
     if score:
-        reg_model = load_model(config_params['files']['regression_model'])
+        reg_model = preloaded_reg_model
         rtn_vals['score'] = reg_model.predict(scld_features)[0][0]
 
     if classification:
-        class_model = load_model(config_params['files']['classification_model'])
+        class_model = preloaded_class_model
         mal_class = np.argmax(class_model.predict(scld_features))
         rtn_vals['classification'] = config_params['classification'][str(mal_class)]
 
