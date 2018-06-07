@@ -1,5 +1,9 @@
 import configparser
 
+from .feature_model import extract_features
+from .class_model import class_predict
+from .reg_model import regress_predict
+
 import cv2
 import numpy as np
 from imutils.face_utils import FaceAligner
@@ -115,12 +119,10 @@ def analyze_image(image_path,
     # -------
     rtn_vals = {}
     if score:
-        reg_model = load_model(config_params['files']['regression_model'])
-        rtn_vals['score'] = reg_model.predict(scld_features)[0][0]
+        rtn_vals['score'] = regress_predict(scld_features)
 
     if classification:
-        class_model = load_model(config_params['files']['classification_model'])
-        mal_class = np.argmax(class_model.predict(scld_features))
+        mal_class = class_predict(scld_features)
         rtn_vals['classification'] = config_params['classification'][str(mal_class)]
 
     return rtn_vals
@@ -197,53 +199,3 @@ def image_preprocess(img_file, landmark_file='./data/shape_predictor_68_face_lan
         raise NoFaceDetectedException
 
     return aligned_img
-
-
-def extract_features(img):
-    '''Function to extract features from image file.
-
-    This function extracts features from an image file using a pre-trained Resnet CNN. The features
-    are then used in another model to determine WFH (WFL) score or malnutrition classification.
-
-    Parameters
-    ----------
-    img : numpy array
-          Numpy array (RGB integer format) of processed image
-
-
-    Returns
-    -------
-    features : numpy array
-               Numpy array (shape = (1, 2048)) of features
-
-    '''
-
-    # ------------------------------
-    # Pre-trained model for features
-    # ------------------------------
-    # Extract model for transfer learning
-    K.clear_session()
-    vgg_model = VGGFace(model='resnet50')
-    last_layer = vgg_model.get_layer('avg_pool').output
-    out = Flatten(name='flatten')(last_layer)
-
-    extractor = Model(vgg_model.input, out)
-
-    # Freeze all layers, since we're using as fixed feature extractor
-    for layer in extractor.layers:
-        layer.trainable = False
-
-    # Fixed features so optimizer and loss functions are irrelavent
-    extractor.compile(optimizer='Adam', loss='categorical_crossentropy')
-
-    # ---------------------------
-    # Process image for input to
-    # Keras model
-    # ---------------------------
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-
-    features = extractor.predict(x, verbose=1)
-
-    return features
