@@ -1,25 +1,16 @@
 import configparser
 
-from .feature_model import extract_features
-from .class_model import class_predict
-from .reg_model import regress_predict
-
 import cv2
+import dlib
 import numpy as np
 from imutils.face_utils import FaceAligner
-from keras.applications.imagenet_utils import preprocess_input
-from keras.engine import Model
-from keras.layers import Flatten
-from keras.models import load_model
-from keras.preprocessing import image
-from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
-from keras_vggface.vggface import VGGFace
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from sklearn.externals import joblib
 
-import dlib
+from .class_model import class_predict
+from .feature_model import extract_features
+from .reg_model import regress_predict
 
 
 class NoFaceDetectedException(APIException):
