@@ -6,7 +6,7 @@ import numpy as np
 from imutils.face_utils import FaceAligner
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from sklearn.externals import joblib
+import joblib
 
 from .class_model import class_predict
 from .feature_model import extract_features
@@ -15,17 +15,19 @@ from .reg_model import regress_predict
 
 class NoFaceDetectedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = {'image': 'No face could be detected.'}
+    default_detail = {"image": "No face could be detected."}
 
 
-def analyze_image(image_path,
-                  score=False,
-                  classification=False,
-                  age=None,
-                  gender='',
-                  config_file='meron_api/apps/meron_production/config/config.ini'):
+def analyze_image(
+    image_path,
+    score=False,
+    classification=False,
+    age=None,
+    gender="",
+    config_file="meron_api/apps/meron_production/config/config.ini",
+):
 
-    '''Function to determine malnutrition classification and wfh (wfl) score from facial image
+    """Function to determine malnutrition classification and wfh (wfl) score from facial image
     and gender and age data.
 
     This function is called by the MERON API and returns malnutrition status derived from facial
@@ -67,12 +69,12 @@ def analyze_image(image_path,
                are set:
                If score is True a WFH (WFL) value is returned
                If classification is True a malnutrition classification is returned (SAM, MAM, NORMAL)
-    '''
+    """
 
     # -----------
     # Gender flag
     # -----------
-    if 'f' in gender.lower():
+    if "f" in gender.lower():
         gender_flg = 0
     else:
         gender_flg = 1
@@ -85,7 +87,7 @@ def analyze_image(image_path,
     # -----------
     # Detect face, normalize brightness and align face in image
     processed_img = image_preprocess(
-        image_path, landmark_file=config_params['files']['landmark_file']
+        image_path, landmark_file=config_params["files"]["landmark_file"]
     )
 
     # ---------------
@@ -102,7 +104,7 @@ def analyze_image(image_path,
     img_features = np.expand_dims(img_features, axis=0)
 
     # Apply scale/standardize to features
-    feature_scaler = joblib.load(config_params['files']['scaler_model'])
+    feature_scaler = joblib.load(config_params["files"]["scaler_model"])
     scld_features = feature_scaler.transform(img_features)
 
     # -------
@@ -110,17 +112,19 @@ def analyze_image(image_path,
     # -------
     rtn_vals = {}
     if score:
-        rtn_vals['score'] = regress_predict(scld_features)
+        rtn_vals["score"] = regress_predict(scld_features)
 
     if classification:
         mal_class = class_predict(scld_features)
-        rtn_vals['classification'] = config_params['classification'][str(mal_class)]
+        rtn_vals["classification"] = config_params["classification"][str(mal_class)]
 
     return rtn_vals
 
 
-def image_preprocess(img_file, landmark_file='./data/shape_predictor_68_face_landmarks.dat'):
-    '''Function to preprocess the original image.
+def image_preprocess(
+    img_file, landmark_file="./data/shape_predictor_68_face_landmarks.dat"
+):
+    """Function to preprocess the original image.
 
     This function performs a variety of pre-processing steps to the input image. These steps
     include:
@@ -153,7 +157,7 @@ def image_preprocess(img_file, landmark_file='./data/shape_predictor_68_face_lan
     results. Image and Vision Computing (IMAVIS), Special Issue on Facial Landmark Localisation
     "In-The-Wild". 2016.
 
-    '''
+    """
 
     # --------------------------------------------
     # Initialize dlib's face detector (HOG-based)

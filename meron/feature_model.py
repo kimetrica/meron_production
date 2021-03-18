@@ -4,17 +4,18 @@ import configparser
 from keras.models import load_model
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
+from tensorflow.compat.v1.keras import backend as K
 import tensorflow as tf
+from tensorflow.compat.v1 import Session
 
 
-config_file = 'meron_api/apps/meron_production/config/config.ini'
+config_file = "meron_api/apps/meron_production/config/config.ini"
 config_params = configparser.ConfigParser()
 config_params.read(config_file)
 
 
 def extract_features(img):
-    '''Function to extract features from image file.
+    """Function to extract features from image file.
 
     This function extracts features from an image file using a pre-trained Resnet CNN. The features
     are then used in another model to determine WFH (WFL) score or malnutrition classification.
@@ -30,12 +31,12 @@ def extract_features(img):
     features : numpy array
                Numpy array (shape = (1, 2048)) of features
 
-    '''
-    with tf.Session(graph=tf.Graph()) as sess:
+    """
+    with Session(graph=tf.Graph()) as sess:
 
         K.set_session(sess)
 
-        model = load_model(config_params['files']['feature_model'])
+        model = load_model(config_params["files"]["feature_model"])
 
         # ---------------------------
         # Process image for input to
